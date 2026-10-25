@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>AHP Kasus Pupuk Indonesia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Graduate&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: navy crest band on top, rank-tab stepper (Hierarki → Kriteria → Alternatif → Hasil), working panels below */
+:root{
+  --navy:#14213f; --navy-2:#1d2d52; --gold:#b98a2e; --gold-soft:#e9d7a8; --red:#9b2a2c; --cream:#f3ead8;
+  --bg:#f6f2e9; --surface:#fffdf8; --surface-2:#efe8d9; --line:#d9cfb9; --fg:#18223a; --muted:#5d6577;
+  --accent:#9a7220; --ok:#2f7a4a; --ok-bg:#e1f0e5; --bad:#9b2a2c; --bad-bg:#f6e1df;
+  --band:#14213f; --band-fg:#f3ead8; --band-gold:#d1a54b;
+  --f-display:"Graduate","Rockwell","Georgia",serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1426; --surface:#131e36; --surface-2:#1a2745; --line:#2b3a5e; --fg:#ece4d2; --muted:#a3a9b8;
+  --accent:#d6ae58; --ok:#7cc796; --ok-bg:#163525; --bad:#ec8f86; --bad-bg:#3b1a1c; --gold-soft:#3a3220;
+  --band:#0a1122; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1426; --surface:#131e36; --surface-2:#1a2745; --line:#2b3a5e; --fg:#ece4d2; --muted:#a3a9b8;
+  --accent:#d6ae58; --ok:#7cc796; --ok-bg:#163525; --bad:#ec8f86; --bad-bg:#3b1a1c; --gold-soft:#3a3220;
+  --band:#0a1122; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.band{background:var(--band);color:var(--band-fg);border-bottom:4px solid var(--band-gold);position:relative}
+header.band::after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:6px;background:var(--red)}
+.band .wrap{display:flex;gap:20px;align-items:center;padding-block:22px 26px}
+.plaque{flex:none;width:84px;height:104px;background:var(--cream);border:2px solid var(--band-gold);border-radius:10px;display:grid;place-items:center;padding:6px}
+.plaque img{max-height:100%;width:auto}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--band-gold);font-weight:600}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(26px,5vw,40px);line-height:1.05;margin:4px 0 6px;letter-spacing:.02em;text-wrap:balance}
+.motto{font-size:13px;opacity:.85;letter-spacing:.08em}
+.motto b{color:var(--band-gold);font-weight:600}
+main{padding-block:34px 60px}
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.tab{font:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 14px 9px 9px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font-weight:600;font-size:14px}
+.tab .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-family:var(--f-display);font-size:13px}
+.tab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:var(--cream)}
+.tab[aria-selected="true"] .n{background:var(--gold);color:var(--navy)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.stack{display:flex;flex-direction:column;gap:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}
+.grid2>*{min-width:0}
+h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0 0 4px;letter-spacing:.02em}
+h3{font-size:15px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700}
+p{margin:0}
+.lede{color:var(--muted);max-width:68ch}
+.btn{font:inherit;font-weight:600;font-size:14px;cursor:pointer;padding:9px 14px;border-radius:8px;border:1.5px solid var(--navy);background:var(--navy);color:var(--cream)}
+:root[data-theme="dark"] .btn{border-color:var(--accent)}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#14213f}
+.btn.sm{padding:5px 10px;font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label.fld{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
+input[type=text]{font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+.items{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;gap:8px;align-items:center}
+.item .tag{flex:none;width:30px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.x{flex:none;font:inherit;cursor:pointer;width:34px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:transparent;color:var(--muted);font-size:18px;line-height:1}
+.x:hover{color:var(--bad);border-color:var(--bad)}
+/* hierarchy */
+.tree{display:flex;flex-direction:column;align-items:center;gap:0;overflow-x:auto;padding:6px 0}
+.tier{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative;padding:14px 0}
+.tlabel{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:center}
+.node{padding:8px 14px;border-radius:8px;font-weight:600;font-size:14px;border:1.5px solid var(--line);background:var(--surface-2);text-align:center}
+.node.goal{background:var(--navy);color:var(--cream);border-color:var(--gold);font-family:var(--f-display);font-weight:400;letter-spacing:.03em;font-size:16px;padding:10px 20px}
+.node.crit{border-color:var(--gold);background:var(--gold-soft)}
+.node small{display:block;font-family:var(--f-mono);font-weight:500;font-size:12px;color:var(--accent)}
+.node.goal small{color:var(--band-gold)}
+.vline{width:2px;height:16px;background:var(--gold)}
+/* pairwise */
+.pairs{display:flex;flex-direction:column;gap:14px}
+.pair{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.pair.flag{border-color:var(--bad);box-shadow:0 0 0 2px var(--bad-bg)}
+.pnames{display:flex;justify-content:space-between;gap:10px;font-weight:600;font-size:14px}
+.pnames span{min-width:0;overflow-wrap:anywhere}
+.pnames span.win{color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--gold);margin:8px 0 2px}
+.ticks{display:grid;grid-template-columns:repeat(17,1fr);font-family:var(--f-mono);font-size:10.5px;color:var(--muted);text-align:center}
+.verdict{margin-top:6px;font-size:13px;color:var(--muted)}
+.verdict b{color:var(--fg)}
+/* tables */
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--surface-2);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.num,td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td:first-child{font-family:var(--f-body);font-weight:600}
+tr.tot td{background:var(--surface-2);font-weight:600}
+td.hl{background:var(--gold-soft);font-weight:600}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.stat .k{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.stat .v{font-family:var(--f-mono);font-size:20px;font-weight:600}
+.stat .f{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.note{font-size:13.5px;color:var(--muted);border-left:3px solid var(--gold);padding:6px 12px;background:var(--bg)}
+.note.warn{border-left-color:var(--bad)}
+.note b{color:var(--fg)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:inherit;cursor:pointer;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);display:flex;gap:8px;align-items:center}
+.chip[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.dot.bad{background:var(--bad)}
+/* ranking */
+.rank{display:flex;flex-direction:column;gap:12px}
+.rk{display:grid;grid-template-columns:40px minmax(0,1fr) 70px;gap:12px;align-items:center}
+.rk .pos{font-family:var(--f-display);font-size:20px;text-align:center;color:var(--muted)}
+.rk.first .pos{color:var(--accent)}
+.rk .nm{font-weight:600;margin-bottom:4px;overflow-wrap:anywhere}
+.bar{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--navy);border-radius:6px}
+:root[data-theme="dark"] .bar i{background:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bar i{background:var(--accent)} :root:not([data-theme="light"]) .btn{border-color:var(--accent)}}
+.rk.first .bar i{background:var(--gold)}
+.rk .sc{font-family:var(--f-mono);font-weight:600;text-align:right}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;font-weight:600;padding:6px 10px;border:none;background:transparent;color:var(--fg);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--cream)}
+select{font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:7px 10px}
+.formula{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+details.guide{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+details.guide summary{cursor:pointer;padding:10px 14px;font-weight:700;font-size:14px;color:var(--accent)}
+details.guide .in{padding:0 14px 14px}
+.guide td{white-space:normal}
+.wrapt td,.wrapt th{white-space:normal;text-align:left;vertical-align:top}
+.wrapt td{font-family:var(--f-body);font-weight:400}
+.wrapt td:first-child{font-weight:600}
+.guide td:nth-child(2){font-family:var(--f-body);font-weight:600}
+.guide td:nth-child(3){font-family:var(--f-body);color:var(--muted);text-align:left}
+.refs{font-size:13.5px;color:var(--muted);display:flex;flex-direction:column;gap:8px;padding-left:18px;margin:0}
+.refs a{color:var(--accent)}
+.opt{display:flex;flex-direction:column;gap:6px}
+.opt .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.savebar{margin-bottom:22px;display:flex;flex-direction:column;gap:10px;border-top:3px solid var(--gold)}
+.svtop{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.svname-f{flex:1 1 260px;min-width:0}
+.svstat{font-size:13px;color:var(--muted)}
+.svstat.ok{color:var(--ok)}
+.svstat.warn{color:var(--bad);font-weight:600}
+.svitems{display:flex;flex-direction:column;gap:8px}
+.svrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.svrow.cur{border-color:var(--gold)}
+.svinfo{min-width:0;flex:1 1 240px}
+.svname{font-weight:700;overflow-wrap:anywhere}
+.svmeta{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.svio{border-top:1px solid var(--line);padding-top:10px}
+.svio .k{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.btn:disabled{opacity:.6;cursor:default}
+footer{font-size:12.5px;color:var(--muted);padding-block:0 30px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--navy);color:var(--cream);padding:10px 16px;border-radius:8px;font-size:14px;border:1px solid var(--gold)}
+@media (max-width:560px){.band .wrap{gap:14px}.plaque{width:64px;height:80px}.ticks span:nth-child(even){visibility:hidden}.panel{padding:16px}}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .35s ease}}
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <div class="plaque"><img src="data:image/jpeg;base64,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" alt="Lambang P3MD Soedirman"></div>
+    <div>
+      <div class="eyebrow">UTS Decision Making · Kelas A · Syndicate 1 · No. 52</div>
+      <h1>Kalkulator AHP · Kasus Pupuk Indonesia</h1>
+      <div class="motto">Diva Eka Putra Fatkhu Rohman · Pemilihan produk kimia untuk feasibility study · <b>Berani · Cepat · Terhormat</b></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="savebar" class="panel savebar" aria-label="Simpan proyek"></section>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <section id="view"></section>
+</main>
+<footer class="wrap">Default mengikuti materi SBM ITB: normalisasi kolom → rata-rata baris, CR = CI/RI ≤ 0,10, sintesis distributive. Opsi tambahan dari Saaty: principal eigenvector, ambang CR per ukuran matriks dan mode ideal. Proyek yang disimpan bersifat pribadi: hanya Anda yang bisa melihatnya.</footer>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const RI=[0,0,0,0.58,0.90,1.12,1.24,1.32,1.41,1.45,1.49];
+const MAXN=10;
+const SCALE={1:"Equally important",2:"Equal–moderately",3:"Moderately more important",4:"Moderately–strongly",5:"Strongly more important",6:"Strongly–very strongly",7:"Very strongly more important",8:"Very strongly–extremely",9:"Extremely more important"};
+const SAATY=[
+ [1,"Equal importance","Kedua elemen berkontribusi sama terhadap tujuan."],
+ [3,"Moderate importance","Pengalaman dan penilaian sedikit lebih memihak satu elemen."],
+ [5,"Strong importance","Pengalaman dan penilaian kuat memihak satu elemen."],
+ [7,"Very strong (demonstrated) importance","Dominasi satu elemen sangat kuat dan terbukti dalam praktik."],
+ [9,"Extreme importance","Bukti yang memihak satu elemen berada pada tingkat penegasan tertinggi."],
+ ["2, 4, 6, 8","Intermediate values","Nilai kompromi di antara dua penilaian bertetangga."],
+ ["1/x","Reciprocals","Jika i diberi nilai x terhadap j, maka j terhadap i bernilai 1/x (aksioma resiprokal)."]];
+const TABS=[["case","Kasus UTS"],["hier","Hierarki"],["crit","Bobot Kriteria"],["alt","Alternatif"],["res","Hasil & Ranking"]];
+const thrOf=n=>S.thr==="saaty"?(n<=3?0.05:n===4?0.08:0.10):0.10;
+let uid=1;
+const ones=n=>Array.from({length:n},()=>Array(n).fill(1));
+
+function caseState(){
+  const up=(n,v)=>{const M=ones(n);let k=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){M[i][j]=v[k];M[j][i]=1/v[k];k++}return M};
+  const C=up(5,[1,2,1,2, 2,1,2, 1/2,1, 2]);
+  const A=[up(4,[2,8,7, 6,5, 1/2]),up(4,[3,8,6, 5,4, 1/3]),up(4,[1/2,6,5, 7,6, 1]),up(4,[1/4,2,1/3, 5,2, 1/4]),up(4,[1/4,1/5,1/6, 1/2,1/3, 1/2])];
+  return {goal:"Memilih produk kimia diversifikasi Pupuk Indonesia yang diprioritaskan untuk feasibility study",
+    criteria:["K1 Peluang substitusi impor","K2 Pasar lokal","K3 Pasar regional","K4 Sinergi aset PI","K5 Risiko (rendah = baik)"],
+    alts:["A1 Methanol & turunan","A2 Soda ash + NH₄Cl","A3 Calcium nitrate","A4 AdBlue/DEF"],
+    cm:C,am:A,method:"approx",thr:"course",synth:"dist",tab:"case",ac:0,sensC:0,sensW:null,pname:"UTS DM · Kasus Pupuk Indonesia"};
+}
+function exampleState(){
+  const C=[[1,3,2,2],[1/3,1,1/4,1/4],[1/2,4,1,1/2],[1/2,4,2,1]];
+  const A=[[[1,1/3,1/4],[3,1,1/2],[4,2,1]],[[1,1/4,1/6],[4,1,1/3],[6,3,1]],[[1,2,8],[1/2,1,6],[1/8,1/6,1]],[[1,1/3,4],[3,1,7],[1/4,1/7,1]]];
+  return {goal:"Select the Best Car",criteria:["Price","MPG","Comfort","Style"],alts:["Car A","Car B","Car C"],cm:C,am:A,method:"approx",thr:"course",synth:"dist",tab:"hier",ac:0,sensC:0,sensW:null};
+}
+function blankState(){
+  return {goal:"Tujuan keputusan",criteria:["Kriteria 1","Kriteria 2","Kriteria 3"],alts:["Alternatif A","Alternatif B","Alternatif C"],cm:ones(3),am:[ones(3),ones(3),ones(3)],method:"approx",thr:"course",synth:"dist",tab:"hier",ac:0,sensC:0,sensW:null};
+}
+function normalize(st){
+  st.method=st.method||"approx";st.thr=st.thr||"course";st.synth=st.synth||"dist";
+  delete st.grp;st.ac=st.ac||0;st.sensC=st.sensC||0;
+  if(!TABS.some(t=>t[0]===st.tab))st.tab="case";
+  return st;
+}
+let S;
+try{S=JSON.parse(localStorage.getItem("ahp-pupuk-uts-v2")||"null")}catch(e){S=null}
+if(!S||!validState(S))S=caseState();
+S=normalize(S);
+function save(){try{localStorage.setItem("ahp-pupuk-uts-v2",JSON.stringify(S))}catch(e){}if(typeof setStatus==="function")setStatus()}
+
+/* ---------- math ---------- */
+function analyze(M){
+  const n=M.length;
+  const col=Array(n).fill(0);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++)col[j]+=M[i][j];
+  const N=M.map(r=>r.map((v,j)=>v/col[j]));
+  const wA=N.map(r=>r.reduce((a,b)=>a+b,0)/n);
+  let wE=Array(n).fill(1/n);
+  for(let k=0;k<500;k++){const x=M.map(r=>r.reduce((s,v,j)=>s+v*wE[j],0));const t=x.reduce((a,b)=>a+b,0);wE=x.map(v=>v/t)}
+  const w=S.method==="eigen"?wE:wA;
+  const ws=M.map(r=>r.reduce((s,v,j)=>s+v*w[j],0));
+  const ratio=ws.map((v,i)=>v/w[i]);
+  const lmax=ratio.reduce((a,b)=>a+b,0)/n;
+  const CI=n>2?(lmax-n)/(n-1):0;
+  const ri=RI[n]||1.49;
+  const CR=ri?CI/ri:0;
+  // most inconsistent pair
+  let worst=null;
+  if(n>2){let best=-1;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const d=Math.abs(Math.log(M[i][j]*w[j]/w[i]));if(d>best){best=d;worst={i,j,implied:w[i]/w[j]}}}}
+  const thr=thrOf(n);
+  return {n,col,N,w,wA,wE,ws,ratio,lmax,CI,RI:ri,CR,thr,ok:n<=2||CR<=thr+1e-12,worst};
+}
+const toV=a=>a>=1?-(Math.round(a)-1):Math.round(1/a)-1;
+const toA=v=>v<=0?1-v:1/(1+v);
+function frac(a){if(a>=1)return String(Math.round(a*1000)/1000).replace(/\.0+$/,"");const d=1/a;return Math.abs(d-Math.round(d))<1e-6?"1/"+Math.round(d):a.toFixed(3)}
+const f3=x=>x.toFixed(3);
+function clampScale(r){const v=r>=1?Math.min(9,Math.max(1,Math.round(r))):1/Math.min(9,Math.max(1,Math.round(1/r)));return v}
+
+/* ---------- save / projects ---------- */
+let DB=null,UID=null,DL=null,SAVES=[],storeMode="local",confirmId=null;
+const LKEY="ahp-pupuk-uts-saves";
+const contentKey=()=>JSON.stringify([S.goal,S.criteria,S.alts,S.cm,S.am]);
+const isDirty=()=>S.savedKey!==contentKey();
+function localSaves(){try{return JSON.parse(localStorage.getItem(LKEY)||"{}")||{}}catch(e){return {}}}
+function setLocalSaves(o){try{localStorage.setItem(LKEY,JSON.stringify(o));return true}catch(e){return false}}
+function refreshLocalList(){SAVES=Object.entries(localSaves()).map(([id,v])=>Object.assign({id},v)).sort((a,b)=>b.savedAt-a.savedAt);drawSaves()}
+function projCol(){return DB.doc("data/users/"+UID+"/ahp").collection("projects")}
+function cleanState(){const c=JSON.parse(JSON.stringify(S));delete c.pid;delete c.pname;delete c.savedKey;delete c.savedAt;return c}
+function validState(st){
+  if(!st||!Array.isArray(st.criteria)||!Array.isArray(st.alts)||!Array.isArray(st.cm)||!Array.isArray(st.am))return false;
+  const nc=st.criteria.length,na=st.alts.length;
+  if(nc<2||na<2||nc>MAXN||na>MAXN||st.cm.length!==nc||st.am.length!==nc)return false;
+  const okM=(M,n)=>Array.isArray(M)&&M.length===n&&M.every(r=>Array.isArray(r)&&r.length===n&&r.every(x=>typeof x==="number"&&x>0&&isFinite(x)));
+  return okM(st.cm,nc)&&st.am.every(m=>okM(m,na));
+}
+const fmtTime=t=>{try{return new Date(t).toLocaleString("id-ID",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
+function setStatus(){
+  const el=document.getElementById("sv-status");if(!el)return;
+  const where=storeMode==="cloud"?"akun Claude Anda (bisa dibuka di perangkat lain)":"browser ini saja";
+  let txt,cls="";
+  if(!S.pid){txt=`Belum disimpan sebagai proyek. Simpanan akan masuk ke ${where}.`}
+  else if(isDirty()){txt=`Ada perubahan yang belum disimpan sejak ${fmtTime(S.savedAt)}.`;cls="warn"}
+  else{txt=`Tersimpan ${fmtTime(S.savedAt)} di ${where}.`;cls="ok"}
+  el.textContent=txt;el.className="svstat "+cls;
+}
+async function saveProject(asNew){
+  const nameInp=document.getElementById("sv-name");
+  const name=((nameInp&&nameInp.value)||S.pname||S.goal||"Proyek AHP").trim().slice(0,80)||"Proyek AHP";
+  S.pname=name;if(nameInp)nameInp.value=name;
+  if(asNew||!S.pid)S.pid="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const now=Date.now();
+  const rec={name,goal:S.goal,savedAt:now,nc:S.criteria.length,na:S.alts.length,state:cleanState()};
+  const btn=document.getElementById("sv-save");if(btn){btn.disabled=true;btn.textContent="Menyimpan…"}
+  try{
+    if(DB){await projCol().doc(S.pid).set(rec)}
+    else{const o=localSaves();o[S.pid]=rec;if(!setLocalSaves(o))throw {code:"local"};refreshLocalList()}
+    S.savedAt=now;S.savedKey=contentKey();save();toast(asNew?"Disimpan sebagai proyek baru":"Proyek tersimpan");
+  }catch(e){
+    const c=e&&e.code;
+    toast(c==="quota_exceeded"?"Penyimpanan penuh. Hapus proyek lama lalu coba lagi.":c==="local"?"Browser menolak penyimpanan lokal.":c==="invalid_argument"?"Akun ini hanya bisa melihat, tidak bisa menyimpan.":"Gagal menyimpan. Coba sekali lagi.");
+  }
+  if(btn){btn.disabled=false;btn.textContent="Simpan"}
+  setStatus();drawSaves();
+}
+function openProject(rec){
+  const st=rec.state;if(!validState(st)){toast("Data proyek tidak valid");return}
+  S=normalize(JSON.parse(JSON.stringify(st)));S.pid=rec.id;S.pname=rec.name;S.savedAt=rec.savedAt;S.savedKey=contentKey();S.tab="hier";
+  confirmId=null;document.getElementById("sv-name").value=S.pname;document.getElementById("sv-list").hidden=true;
+  commit();toast("Dibuka: "+rec.name);
+}
+async function deleteProject(id){
+  try{
+    if(DB)await projCol().doc(id).delete();else{const o=localSaves();delete o[id];setLocalSaves(o);refreshLocalList()}
+    if(S.pid===id){S.pid=null;S.savedAt=null;S.savedKey=null;save()}
+    toast("Proyek dihapus");
+  }catch(e){toast("Gagal menghapus")}
+  confirmId=null;setStatus();drawSaves();
+}
+function drawSaves(){
+  const cnt=document.getElementById("sv-count");if(cnt)cnt.textContent=SAVES.length;
+  const box=document.getElementById("sv-items");if(!box)return;
+  if(!SAVES.length){box.innerHTML=`<p class="lede">Belum ada proyek tersimpan. Isi nama proyek di atas lalu klik <b>Simpan</b>.</p>`;return}
+  box.innerHTML="";
+  SAVES.forEach(rec=>{
+    const cur=rec.id===S.pid;
+    const conf=confirmId&&confirmId.id===rec.id?confirmId.kind:null;
+    const row=h(`<div class="svrow ${cur?"cur":""}"><div class="svinfo"><div class="svname">${esc(rec.name)}${cur?' <span class="badge ok" style="padding:2px 8px;font-size:11px">aktif</span>':""}</div><div class="svmeta">${esc(rec.goal||"")} · ${rec.nc||"?"} kriteria · ${rec.na||"?"} alternatif · ${fmtTime(rec.savedAt)}</div></div>
+      <div class="row" style="gap:6px">${conf==="open"?`<button class="btn sm gold" data-a="open2">Buang perubahan &amp; buka</button><button class="btn sm ghost" data-a="cancel">Batal</button>`:conf==="del"?`<button class="btn sm" style="background:var(--bad);border-color:var(--bad);color:#fff" data-a="del2">Ya, hapus</button><button class="btn sm ghost" data-a="cancel">Batal</button>`:`<button class="btn sm" data-a="open">Buka</button><button class="btn sm ghost" data-a="del">Hapus</button>`}</div></div>`);
+    row.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==="open"){if(S.pid?isDirty():true){confirmId={id:rec.id,kind:"open"};drawSaves()}else openProject(rec)}
+      else if(a==="open2")openProject(rec);
+      else if(a==="del"){confirmId={id:rec.id,kind:"del"};drawSaves()}
+      else if(a==="del2")deleteProject(rec.id);
+      else{confirmId=null;drawSaves()}
+    });
+    box.appendChild(row);
+  });
+}
+async function exportJSON(){
+  const name=(document.getElementById("sv-name").value||S.pname||S.goal||"proyek-ahp").trim();
+  const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"proyek-ahp";
+  const data=JSON.stringify({app:"kalkulator-ahp-soedirman",version:1,name,exportedAt:new Date().toISOString(),state:cleanState()},null,2);
+  if(!DL){ // standalone file (outside Claude): plain browser download
+    try{const u=URL.createObjectURL(new Blob([data],{type:"application/json"}));const a=document.createElement("a");a.href=u;a.download=slug+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);toast("File .json diunduh")}catch(e){toast("Unduhan tidak tersedia")}
+    return}
+  try{await DL.save({filename:slug+".json",data});toast("File .json diunduh")}
+  catch(e){if(e&&e.code!=="declined")toast(e&&e.code==="rate_limited"?"Tunggu sebentar lalu coba lagi":"Unduhan tidak tersedia")}
+}
+function importFile(file){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    let obj;try{obj=JSON.parse(rd.result)}catch(e){toast("File bukan JSON yang valid");return}
+    const st=obj&&obj.state?obj.state:obj;
+    if(!validState(st)){toast("Format file tidak dikenali sebagai proyek AHP");return}
+    S=normalize(JSON.parse(JSON.stringify(st)));S.pid=null;S.savedAt=null;S.savedKey=null;S.pname=(obj.name||"Proyek impor").slice(0,80);S.tab="hier";
+    document.getElementById("sv-name").value=S.pname;commit();toast("Diimpor. Klik Simpan untuk menyimpannya.");
+  };
+  rd.onerror=()=>toast("Gagal membaca file");
+  rd.readAsText(file);
+}
+function initSaveBar(){
+  const bar=document.getElementById("savebar");
+  bar.innerHTML=`<div class="svtop">
+    <label class="fld svname-f" for="sv-name">Nama proyek<input type="text" id="sv-name" maxlength="80" placeholder="mis. Pemilihan Vendor Kapal" value="${esc(S.pname||"")}"></label>
+    <div class="row svbtns">
+      <button class="btn" id="sv-save" title="Ctrl/⌘ + S">Simpan</button>
+      <button class="btn ghost" id="sv-new">Simpan sebagai baru</button>
+      <button class="btn ghost" id="sv-toggle" aria-expanded="false">Proyek saya (<span id="sv-count">0</span>)</button>
+    </div></div>
+    <p id="sv-status" class="svstat"></p>
+    <div id="sv-list" class="stack" hidden>
+      <div id="sv-items" class="svitems"></div>
+      <div class="row svio"><span class="k">File</span><button class="btn sm ghost" id="sv-exp" hidden>Unduh .json</button><button class="btn sm ghost" id="sv-imp">Unggah .json</button><input type="file" id="sv-file" accept=".json,application/json" hidden><span class="formula">Bagikan file .json ke anggota sindikat agar mereka bisa membuka proyek yang sama.</span></div>
+    </div>`;
+  const nm=bar.querySelector("#sv-name");nm.oninput=()=>{S.pname=nm.value;save()};
+  bar.querySelector("#sv-save").onclick=()=>saveProject(false);
+  bar.querySelector("#sv-new").onclick=()=>saveProject(true);
+  const tg=bar.querySelector("#sv-toggle"),lst=bar.querySelector("#sv-list");
+  tg.onclick=()=>{lst.hidden=!lst.hidden;tg.setAttribute("aria-expanded",String(!lst.hidden));confirmId=null;drawSaves()};
+  bar.querySelector("#sv-exp").onclick=exportJSON;
+  const fi=bar.querySelector("#sv-file");bar.querySelector("#sv-imp").onclick=()=>fi.click();
+  fi.onchange=()=>{if(fi.files[0])importFile(fi.files[0]);fi.value=""};
+  document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();saveProject(false)}});
+  refreshLocalList();setStatus();
+}
+async function initStorage(){
+  if(!window.claude||typeof window.claude.use!=="function"){document.getElementById("sv-exp").hidden=false;return}
+  try{
+    const [db,user,dl]=await Promise.all([claude.use("db"),claude.use("user"),claude.use("downloads")]);
+    if(dl){DL=dl;document.getElementById("sv-exp").hidden=false}
+    const uid=user?await user.id():null;
+    if(db&&uid){
+      DB=db;UID=uid;storeMode="cloud";
+      // move projects saved only in this browser into the account
+      const loc=localSaves();const ids=Object.keys(loc);
+      for(const id of ids){try{await projCol().doc(id).set(loc[id]);delete loc[id]}catch(e){break}}
+      if(ids.length)setLocalSaves(loc);
+      projCol().onSnapshot(snap=>{SAVES=snap.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>b.savedAt-a.savedAt);drawSaves()},
+        ()=>{DB=null;storeMode="local";refreshLocalList();setStatus()});
+    }
+  }catch(e){}
+  setStatus();
+}
+/* ---------- structure edits ---------- */
+function addCrit(){if(S.criteria.length>=MAXN)return;S.criteria.push("Kriteria "+(S.criteria.length+1));S.cm=grow(S.cm);S.am.push(ones(S.alts.length));commit()}
+function delCrit(k){if(S.criteria.length<=2)return;S.criteria.splice(k,1);S.cm=shrink(S.cm,k);S.am.splice(k,1);S.ac=Math.min(S.ac,S.criteria.length-1);S.sensC=0;S.sensW=null;commit()}
+function addAlt(){if(S.alts.length>=MAXN)return;S.alts.push("Alternatif "+String.fromCharCode(65+S.alts.length));S.am=S.am.map(grow);commit()}
+function delAlt(k){if(S.alts.length<=2)return;S.alts.splice(k,1);S.am=S.am.map(m=>shrink(m,k));commit()}
+function grow(M){const n=M.length;const R=M.map(r=>[...r,1]);R.push(Array(n+1).fill(1));return R}
+function shrink(M,k){return M.filter((_,i)=>i!==k).map(r=>r.filter((_,j)=>j!==k))}
+function commit(){save();render()}
+function resetIdent(){S.pid=null;S.pname="";S.savedAt=null;S.savedKey=null;const n=document.getElementById("sv-name");if(n)n.value="";confirmId=null;drawSaves()}
+
+/* ---------- toast & copy ---------- */
+let tt;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2200)}
+function copyText(txt){
+  const done=()=>toast("Tersalin. Tempel di Excel atau Word.");
+  try{navigator.clipboard.writeText(txt).then(done,()=>fallback(txt))}catch(e){fallback(txt)}
+}
+function fallback(txt){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Tersalin.")}catch(e){toast("Salin manual: teks sudah terseleksi.")}setTimeout(()=>ta.remove(),4000)}
+
+/* ---------- render helpers ---------- */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const h=(html)=>{const t=document.createElement("template");t.innerHTML=html.trim();return t.content.firstElementChild};
+
+function renderTabs(){
+  const nav=document.getElementById("tabs");nav.innerHTML="";
+  TABS.forEach(([id,label],i)=>{
+    const b=h(`<button class="tab" role="tab" aria-selected="${S.tab===id}"><span class="n">${i+1}</span>${label}</button>`);
+    b.onclick=()=>{S.tab=id;save();render();window.scrollTo({top:0})};nav.appendChild(b);
+  });
+}
+function render(){renderTabs();const v=document.getElementById("view");v.innerHTML="";({case:viewCase,hier:viewHier,crit:viewCrit,alt:viewAlt,res:viewRes})[S.tab](v)}
+
+
+/* ---------- 0. Case brief (UTS) ---------- */
+function viewCase(v){
+  const T=(head,rows)=>`<div class="tscroll"><table class="wrapt"><thead><tr>${head.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  v.appendChild(h(`<div class="panel stack"><div><h2>Studi kasus · Lampiran perhitungan UTS</h2>
+    <p class="lede">Lampiran daring Take Home Mid-Exam Decision Making (MK 5): matriks lengkap, konsistensi, dan analisis sensitivitas tahap Decision Analysis dalam kerangka Kepner-Tregoe.</p></div>
+    <p class="note"><b>Alur:</b> Perpres 113/2025 mengubah subsidi dari <i>cost plus</i> ke <i>mark to market</i> → dua tuas laba: efisiensi dan diversifikasi → fokus diversifikasi kimia sesuai visi PI <i>"A leading global agrosolution and integrated chemical company"</i> → memilih satu produk untuk feasibility study.</p>
+    <p class="note"><b>Decision statement:</b> memilih satu produk kimia turunan gas/amonia yang diprioritaskan Pupuk Indonesia untuk <i>feasibility study</i>, tanpa mengganggu kewajiban PSO pupuk bersubsidi.</p></div>`));
+
+  v.appendChild(h(`<div class="panel stack" style="margin-top:20px"><h3>Tahap 1 · MUST screening (lolos/gugur)</h3>
+    ${T(["Kandidat","M1 Bahan baku utama dari grup PI","M2 Tidak mengurangi pasokan PSO","M3 Sesuai visi & regulasi","Status"],[
+      ["Methanol & turunan","✓ gas bumi","⚠ bersyarat: butuh alokasi gas baru ≥90 BBTUD di luar alokasi pupuk","✓","Lolos (bersyarat)"],
+      ["Soda ash + NH₄Cl","✓ amonia & CO₂ grup","✓","✓","Lolos"],
+      ["Calcium nitrate","✓ turunan amonia","✓","✓","Lolos"],
+      ["AdBlue/DEF","✓ urea teknis","✓","✓","Lolos"],
+      ["Sodium cyanide (daftar awal)","✗ butuh NaOH dari luar grup","✓","⚠ kimia tambang, jauh dari agrosolution","Gugur"]])}
+    <p class="formula">Syarat M2 methanol dibawa ke Potential Problem Analysis (kepastian gas).</p></div>`));
+
+  v.appendChild(h(`<div class="panel stack" style="margin-top:20px"><h3>Tahap 2 · Kriteria dan data pembanding</h3>
+    <p class="lede">Lima pertimbangan mengikuti kajian diversifikasi penulis. Bobot kajian awal (direct rating): impor 25%, pasar lokal 25%, regional 15%, sinergi 20%, risiko 15%. Di sini bobot diturunkan ulang dengan pairwise AHP.</p>
+    ${T(["Kriteria","A1 Methanol","A2 Soda ash + NH₄Cl","A3 Calcium nitrate","A4 AdBlue/DEF"],[
+      ["K1 Impor Indonesia 2024","1.186 kt · US$390 jt · ▲21%","844 kt · US$216 jt (harga ▼27%) + 313 kt · US$36 jt (▲127%)","27 kt · US$11 jt · ▼13%","Estimasi 10–50 kt"],
+      ["K2 Pasar lokal","1,9 Mt (2025, 68% impor) → 2,5–2,9 Mt dengan B50; kapasitas domestik 0,66 Mt","Industri kaca, deterjen; NH₄Cl untuk NPK. Kebutuhan ≈ impor (ASSUMPTION)","Niche hortikultura","Kendaraan diesel Euro 4+, tumbuh"],
+      ["K3 Pasar regional (impor ASEAN-4)","US$642 jt","US$697 jt + US$155 jt = US$852 jt","US$65 jt","Australia ±74 kt"],
+      ["K4 Sinergi aset PI","Gas bumi; bersaing alokasi gas dengan pupuk","Amonia & CO₂; melanjutkan proyek soda ash Bontang","Turunan amonia, butuh asam nitrat","Urea teknis yang sudah diproduksi"],
+      ["K5 Risiko","Tertinggi: kapasitas diumumkan 5,7 Mtpa (2031), sensitif gas, bergantung B50, capex US$1,05 miliar","Sedang: harga soda ash turun 27%","Rendah–sedang: pasar menyusut","Terendah: capex kecil"]])}</div>`));
+
+  v.appendChild(h(`<div class="panel stack" style="margin-top:20px"><h3>Tahap 3 · Dasar penilaian pairwise</h3>
+    ${T(["Matriks","Penilaian","Alasan"],[
+      ["Kriteria","K1 = K2 = K4 (1); K1, K2, K4 vs K3 dan K5 = 2; K3 = K5 (1)","Mengikuti urutan kepentingan kajian awal: substitusi impor, pasar lokal, dan sinergi menjadi penentu utama; pasar regional dan risiko pendukung"],
+      ["K1 Impor","A1 vs A2 = 2; A1 vs A3 = 8; A1 vs A4 = 7; A2 vs A3 = 6; A2 vs A4 = 5; A4 vs A3 = 2","Nilai impor methanol ±1,5 kali klaster A2 dan tumbuh; calcium nitrate kecil dan menyusut"],
+      ["K2 Lokal","A1 vs A2 = 3; vs A3 = 8; vs A4 = 6; A2 vs A3 = 5; A2 vs A4 = 4; A4 vs A3 = 3","Permintaan methanol didorong kebijakan B50; A3 niche"],
+      ["K3 Regional","A2 vs A1 = 2; A1 vs A3 = 6; vs A4 = 5; A2 vs A3 = 7; A2 vs A4 = 6; A3 = A4","Impor ASEAN-4 klaster A2 (US$852 jt) lebih besar dari methanol (US$642 jt)"],
+      ["K4 Sinergi","A2 vs A1 = 4; A1 vs A3 = 2; A4 vs A1 = 3; A2 vs A3 = 5; A2 vs A4 = 2; A4 vs A3 = 4","A2 paling terintegrasi dengan amonia & CO₂; methanol bersaing alokasi gas"],
+      ["K5 Risiko","A2 vs A1 = 4; A3 vs A1 = 5; A4 vs A1 = 6; A3 vs A2 = 2; A4 vs A2 = 3; A4 vs A3 = 2","Methanol paling berisiko; AdBlue paling rendah"]])}
+    <p class="note warn"><b>Temuan utama:</b> A1 dan A2 nyaris seri (selisih < 0,01) dan mode ideal membalik urutannya. Penulis tidak mengubah penilaian untuk memenangkan salah satu. Pemecah seri dilakukan secara kualitatif dalam kerangka KT: <b>timing</b> dan <b>nilai informasi FS</b>. Soda ash fase 1 sudah dibangun (target operasi 2028), sehingga FS fase 2 lebih tepat setelah data operasi tersedia. Methanol belum memiliki FS penuh, sedangkan keputusan gate PI jatuh pada 2027.</p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" id="go">Lihat hierarki →</button></div></div>`));
+  v.querySelector("#go").onclick=()=>{S.tab="hier";commit();window.scrollTo({top:0})};
+}
+
+/* ---------- 1. Hierarchy ---------- */
+function listEditor(title,arr,onAdd,onDel,prefix){
+  const box=h(`<div class="panel stack"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${title} <span style="color:var(--muted);font-weight:500">(${arr.length}/${MAXN})</span></h3><button class="btn sm ghost" ${arr.length>=MAXN?"disabled":""}>+ Tambah</button></div><div class="items"></div></div>`);
+  box.querySelector("button").onclick=onAdd;
+  const items=box.querySelector(".items");
+  arr.forEach((name,k)=>{
+    const it=h(`<div class="item"><span class="tag">${prefix}${k+1}</span><input type="text" id="${prefix}-${k}" value="${esc(name)}" aria-label="${title} ${k+1}"><button class="x" title="Hapus" aria-label="Hapus ${esc(name)}" ${arr.length<=2?"disabled":""}>×</button></div>`);
+    const inp=it.querySelector("input");inp.oninput=()=>{arr[k]=inp.value||(prefix+(k+1));save();drawTree()};
+    it.querySelector(".x").onclick=()=>onDel(k);items.appendChild(it);
+  });
+  return box;
+}
+function drawTree(){
+  const t=document.getElementById("tree");if(!t)return;
+  const cw=analyze(S.cm).w;
+  t.innerHTML=`<div class="tlabel">Overall Goal</div><div class="tier"><div class="node goal">${esc(S.goal)}<small>1.000</small></div></div><div class="vline"></div>
+  <div class="tlabel">Criteria</div><div class="tier">${S.criteria.map((c,i)=>`<div class="node crit">${esc(c)}<small>${f3(cw[i])}</small></div>`).join("")}</div><div class="vline"></div>
+  <div class="tlabel">Decision Alternatives</div><div class="tier">${S.alts.map(a=>`<div class="node">${esc(a)}</div>`).join("")}</div>`;
+}
+function viewHier(v){
+  const intro=h(`<div class="panel stack"><div><h2>Langkah 1 · Susun hierarki</h2><p class="lede">Tentukan tujuan (goal), kriteria, dan alternatif. Setiap alternatif akan dibandingkan berpasangan pada setiap kriteria. Angka di bawah kriteria adalah bobot saat ini.</p></div>
+  <label class="fld">Tujuan keputusan<input type="text" id="goal" value="${esc(S.goal)}"></label>
+  <div class="row"><button class="btn gold" id="case">Muat ulang kasus UTS</button><button class="btn ghost" id="ex">Contoh materi: Car Selection</button><button class="btn ghost" id="blank">Mulai dari kosong</button></div></div>`);
+  intro.querySelector("#goal").oninput=e=>{S.goal=e.target.value;save();drawTree()};
+  intro.querySelector("#ex").onclick=()=>{S=normalize(exampleState());resetIdent();commit();toast("Contoh Car Selection dimuat")};
+  intro.querySelector("#case").onclick=()=>{S=normalize(caseState());resetIdent();S.tab="hier";commit();toast("Kasus UTS Pupuk Indonesia dimuat")};
+  intro.querySelector("#blank").onclick=()=>{S=normalize(blankState());resetIdent();commit();toast("Lembar kerja baru")};
+  v.appendChild(intro);
+  const tree=h(`<div class="panel" style="margin-top:20px"><div class="tree" id="tree"></div></div>`);v.appendChild(tree);
+  const g=h(`<div class="grid2" style="margin-top:20px"></div>`);
+  g.appendChild(listEditor("Kriteria",S.criteria,addCrit,delCrit,"C"));
+  g.appendChild(listEditor("Alternatif",S.alts,addAlt,delAlt,"A"));
+  v.appendChild(g);
+  const big=S.criteria.length>9||S.alts.length>9;
+  v.appendChild(h(`<p class="note ${big?"warn":""}" style="margin-top:20px"><b>Prinsip Saaty untuk menyusun hierarki:</b> elemen yang dibandingkan dalam satu matriks harus <b>homogen</b> (berskala kira-kira sama) dan jumlahnya kecil, <b>tidak lebih dari 9</b>, sejalan dengan batas "7 ± 2" kapasitas kognitif (Miller). ${big?"Saat ini ada level dengan 10 elemen; pertimbangkan memecahnya menjadi sub-kriteria atau klaster.":"Jika kriteria terlalu banyak, kelompokkan menjadi kriteria utama dan sub-kriteria."}</p>`));
+  const nx=h(`<div class="row" style="margin-top:20px;justify-content:flex-end"><button class="btn">Lanjut: bobot kriteria →</button></div>`);
+  nx.querySelector("button").onclick=()=>{S.tab="crit";commit()};v.appendChild(nx);
+  drawTree();
+}
+
+/* ---------- pairwise component ---------- */
+const onScale=a=>{const r=a>=1?a:1/a;return Math.abs(r-Math.round(r))<1e-9&&Math.round(r)<=9};
+function scaleGuide(){
+  return `<details class="guide"><summary>Skala fundamental Saaty (1–9): arti setiap angka</summary><div class="in"><div class="tscroll"><table><thead><tr><th>Nilai</th><th>Definisi</th><th>Penjelasan</th></tr></thead><tbody>${SAATY.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</tbody></table></div><p class="formula" style="margin-top:8px">Saaty (1990, 2008). Pertanyaan yang diajukan: "Seberapa lebih penting / lebih disukai elemen kiri dibanding kanan terhadap elemen induknya?"</p></div></details>`;
+}
+function pairwiseBlock(v,title,sub,names,M,onChanged){
+  const wrap=h(`<div class="grid2"><div class="panel stack"><div><h2>${title}</h2><p class="lede">${sub}</p></div>${scaleGuide()}<div class="pairs"></div></div><div class="stack" id="calc"></div></div>`);
+  const pairs=wrap.querySelector(".pairs");const calc=wrap.querySelector("#calc");
+  const ticks=[9,8,7,6,5,4,3,2,1,2,3,4,5,6,7,8,9].map(x=>`<span>${x}</span>`).join("");
+  const rows=[];
+  for(let i=0;i<names.length;i++)for(let j=i+1;j<names.length;j++){
+    const id=`r-${title.length}-${i}-${j}`;
+    const el=h(`<div class="pair" data-i="${i}" data-j="${j}"><div class="pnames"><span>${esc(names[i])}</span><span style="text-align:right">${esc(names[j])}</span></div>
+      <input type="range" id="${id}" min="-8" max="8" step="1" value="${toV(M[i][j])}" aria-label="${esc(names[i])} dibanding ${esc(names[j])}">
+      <div class="ticks" aria-hidden="true">${ticks}</div><div class="verdict"></div></div>`);
+    const r=el.querySelector("input"),ver=el.querySelector(".verdict"),sp=el.querySelectorAll(".pnames span");
+    const show=()=>{const a=M[i][j];
+      if(!onScale(a)){sp[0].classList.toggle("win",a>1);sp[1].classList.toggle("win",a<1);
+        ver.innerHTML=`<b>Nilai di luar skala 1–9</b>: a<sub>${i+1}${j+1}</sub> = ${a.toFixed(3)}. Geser slider untuk menggantinya dengan nilai skala Saaty.`;return}
+      const vv=toV(a),k=Math.abs(vv)+1;
+      sp[0].classList.toggle("win",vv<0);sp[1].classList.toggle("win",vv>0);
+      ver.innerHTML=vv===0?`<b>1</b> · Equal importance`:`<b>${esc(vv<0?names[i]:names[j])}</b> ${k} · ${SCALE[k]} → a<sub>${i+1}${j+1}</sub> = ${frac(a)}`};
+    r.oninput=()=>{const a=toA(+r.value);M[i][j]=a;M[j][i]=1/a;show();save();draw();onChanged&&onChanged()};
+    show();pairs.appendChild(el);rows.push(el);
+  }
+  function draw(){
+    const A=analyze(M);
+    rows.forEach(el=>el.classList.toggle("flag",!A.ok&&A.worst&&+el.dataset.i===A.worst.i&&+el.dataset.j===A.worst.j));
+    calc.innerHTML="";calc.appendChild(calcPanels(names,M,A));
+  }
+  draw();v.appendChild(wrap);
+}
+const pct=x=>(x*100).toFixed(0)+"%";
+function calcPanels(names,M,A){
+  const n=names.length;
+  const head=`<tr><th></th>${names.map(x=>`<th>${esc(x)}</th>`).join("")}`;
+  const t1=`<table><thead>${head}</tr></thead><tbody>${M.map((r,i)=>`<tr><td>${esc(names[i])}</td>${r.map(v=>`<td>${frac(v)}</td>`).join("")}</tr>`).join("")}<tr class="tot"><td>Column total</td>${A.col.map(c=>`<td>${c.toFixed(3)}</td>`).join("")}</tr></tbody></table>`;
+  const t2=`<table><thead>${head}<th>Row avg</th></tr></thead><tbody>${A.N.map((r,i)=>`<tr><td>${esc(names[i])}</td>${r.map(v=>`<td>${f3(v)}</td>`).join("")}<td class="${S.method==="eigen"?"":"hl"}">${f3(A.wA[i])}</td></tr>`).join("")}<tr class="tot"><td>Total</td>${A.N[0].map((_,j)=>`<td>${f3(A.N.reduce((s,r)=>s+r[j],0))}</td>`).join("")}<td>${f3(A.wA.reduce((a,b)=>a+b,0))}</td></tr></tbody></table>`;
+  const maxd=Math.max(...A.wA.map((x,i)=>Math.abs(x-A.wE[i])));
+  const t2b=`<table><thead><tr><th></th><th>Approx (row avg)</th><th>Principal eigenvector</th><th>Selisih</th></tr></thead><tbody>${names.map((x,i)=>`<tr><td>${esc(x)}</td><td class="${S.method==="eigen"?"":"hl"}">${f3(A.wA[i])}</td><td class="${S.method==="eigen"?"hl":""}">${f3(A.wE[i])}</td><td>${(A.wA[i]-A.wE[i]>=0?"+":"")+(A.wA[i]-A.wE[i]).toFixed(4)}</td></tr>`).join("")}</tbody></table>`;
+  const t3=`<table><thead><tr><th></th><th>Weighted sum (Aw)</th><th>Priority (w)</th><th>Aw ÷ w</th></tr></thead><tbody>${names.map((x,i)=>`<tr><td>${esc(x)}</td><td>${f3(A.ws[i])}</td><td>${f3(A.w[i])}</td><td>${f3(A.ratio[i])}</td></tr>`).join("")}</tbody></table>`;
+  const thr=A.thr.toFixed(2).replace(".",",");
+  let warn="";
+  if(n<=2)warn=`<p class="note">Matriks 2×2 selalu konsisten sempurna (RI = 0), jadi CR tidak dihitung.</p>`;
+  else if(!A.ok&&A.worst){const {i,j,implied}=A.worst;warn=`<p class="note warn"><b>CR di atas ${thr}.</b> Saaty menyarankan memperbaiki penilaian, bukan memaksakan hasil. Perbandingan paling menyimpang: <b>${esc(names[i])} vs ${esc(names[j])}</b> (saat ini ${frac(M[i][j])}). Dari penilaian lain, nilai yang konsisten mendekati <b>${frac(clampScale(implied))}</b> (w<sub>${i+1}</sub>/w<sub>${j+1}</sub> = ${implied.toFixed(2)}). Tinjau ulang pasangan yang ditandai merah.</p>`}
+  else warn=`<p class="note">Konsistensi dapat diterima, proses keputusan bisa dilanjutkan.</p>`;
+  return h(`<div class="stack">
+    <div class="panel stack"><h3>1 · Matriks pairwise &amp; column total</h3><div class="tscroll">${t1}</div></div>
+    <div class="panel stack"><div class="row" style="justify-content:space-between"><h3 style="margin:0">2–3 · Normalisasi &amp; priority vector</h3>${methodSeg()}</div><div class="tscroll">${t2}</div>
+      <div class="tscroll">${t2b}</div>
+      <p class="note">Menurut Saaty, prioritas yang sebenarnya adalah <b>principal right eigenvector</b> (Aw = λ<sub>max</sub>w). Rata-rata baris di materi adalah pendekatannya; hasil keduanya identik bila matriks konsisten sempurna dan makin berbeda saat inkonsistensi naik. Selisih terbesar di sini: <b>${maxd.toFixed(4)}</b>.</p></div>
+    <div class="panel stack"><h3>4 · Consistency ratio</h3><div class="tscroll">${t3}</div>
+      <div class="stats">
+        <div class="stat"><div class="k">λmax</div><div class="v">${f3(A.lmax)}</div><div class="f">avg(Aw ÷ w), ≥ n</div></div>
+        <div class="stat"><div class="k">CI</div><div class="v">${n>2?A.CI.toFixed(4):"0"}</div><div class="f">(λ − ${n}) / ${n-1}</div></div>
+        <div class="stat"><div class="k">RI (n=${n})</div><div class="v">${A.RI.toFixed(2)}</div><div class="f">Random index</div></div>
+        <div class="stat"><div class="k">CR</div><div class="v">${n>2?A.CR.toFixed(4):"—"}</div><div class="f">CI ÷ RI · batas ${thr}</div></div>
+      </div>
+      <div class="row" style="justify-content:space-between"><span class="badge ${A.ok?"ok":"bad"}">${A.ok?`✓ Konsisten (CR ≤ ${thr})`:`✕ Tidak konsisten (CR > ${thr})`}</span>${thrSeg()}</div>${warn}</div></div>`);
+}
+function methodSeg(){
+  return `<div class="seg" role="group" aria-label="Metode priority vector"><button aria-pressed="${S.method!=="eigen"}" data-method="approx">Approx (materi)</button><button aria-pressed="${S.method==="eigen"}" data-method="eigen">Eigenvector (Saaty)</button></div>`;
+}
+function thrSeg(){
+  return `<div class="seg" role="group" aria-label="Ambang CR" title="Saaty: 0,05 untuk n=3, 0,08 untuk n=4, 0,10 untuk n≥5"><button aria-pressed="${S.thr!=="saaty"}" data-thr="course">CR ≤ 0,10 (materi)</button><button aria-pressed="${S.thr==="saaty"}" data-thr="saaty">Per ukuran n (Saaty)</button></div>`;
+}
+function setMethod(m){S.method=m;commit()}
+
+/* ---------- 2. Criteria ---------- */
+function viewCrit(v){
+  pairwiseBlock(v,"Langkah 2 · Bandingkan kriteria",`Geser ke arah kriteria yang lebih penting untuk tujuan "<b>${esc(S.goal)}</b>". Tengah = sama penting (1); ujung = 9.`,S.criteria,S.cm);
+  const nx=h(`<div class="row" style="margin-top:20px;justify-content:space-between"><button class="btn ghost">← Hierarki</button><button class="btn">Lanjut: alternatif →</button></div>`);
+  const b=nx.querySelectorAll("button");b[0].onclick=()=>{S.tab="hier";commit()};b[1].onclick=()=>{S.tab="alt";commit()};v.appendChild(nx);
+}
+
+/* ---------- 3. Alternatives ---------- */
+function viewAlt(v){
+  S.ac=Math.min(S.ac,S.criteria.length-1);
+  const top=h(`<div class="panel stack" style="margin-bottom:20px"><div><h2>Langkah 3 · Bandingkan alternatif per kriteria</h2><p class="lede">Pilih kriteria, lalu nilai alternatif mana yang lebih unggul pada kriteria tersebut. Titik merah = matriks belum konsisten.</p></div><div class="chips" id="chips"></div></div>`);
+  v.appendChild(top);
+  const drawChips=()=>{const c=top.querySelector("#chips");c.innerHTML="";S.criteria.forEach((name,k)=>{const A=analyze(S.am[k]);const b=h(`<button class="chip" aria-pressed="${k===S.ac}"><span class="dot ${A.ok?"":"bad"}"></span>${esc(name)}</button>`);b.onclick=()=>{S.ac=k;commit()};c.appendChild(b)})};
+  drawChips();
+  pairwiseBlock(v,`Kriteria: ${esc(S.criteria[S.ac])}`,`Geser ke arah alternatif yang lebih disukai dari sisi <b>${esc(S.criteria[S.ac])}</b>.`,S.alts,S.am[S.ac],drawChips);
+  const nx=h(`<div class="row" style="margin-top:20px;justify-content:space-between"><button class="btn ghost">← Bobot kriteria</button><button class="btn">${S.ac<S.criteria.length-1?"Kriteria berikutnya →":"Lihat hasil →"}</button></div>`);
+  const b=nx.querySelectorAll("button");b[0].onclick=()=>{S.tab="crit";commit()};
+  b[1].onclick=()=>{if(S.ac<S.criteria.length-1)S.ac++;else S.tab="res";commit();window.scrollTo({top:0})};v.appendChild(nx);
+}
+
+/* ---------- 4. Results ---------- */
+function compute(){
+  const C=analyze(S.cm);const cw=C.w;
+  const AA=S.am.map(analyze);
+  const P=S.alts.map((_,i)=>AA.map(a=>a.w[i]));
+  return {C,cw,AA,P};
+}
+function useP(P){if(S.synth!=="ideal")return P;const mx=P[0].map((_,k)=>Math.max(...P.map(r=>r[k])));return P.map(r=>r.map((v,k)=>v/mx[k]))}
+function scores(P,w){const s=P.map(r=>r.reduce((t,v,k)=>t+v*w[k],0));if(S.synth!=="ideal")return s;const t=s.reduce((a,b)=>a+b,0);return s.map(x=>x/t)}
+function synthSeg(){return `<div class="seg" role="group" aria-label="Mode sintesis"><button aria-pressed="${S.synth!=="ideal"}" data-synth="dist">Distributive (materi)</button><button aria-pressed="${S.synth==="ideal"}" data-synth="ideal">Ideal</button></div>`}
+function viewRes(v){
+  const {C,cw,AA,P}=compute();
+  const PU=useP(P);const sc=scores(PU,cw);
+  const order=sc.map((s,i)=>i).sort((a,b)=>sc[b]-sc[a]);
+  const top=order[0],sec=order[1];
+  const contrib=cw.map((w,k)=>w*PU[top][k]);const csum=contrib.reduce((a,b)=>a+b,0);
+  const driver=contrib.indexOf(Math.max(...contrib));
+  const allOk=C.ok&&AA.every(a=>a.ok);
+  const margin=sc[top]-sc[sec];
+
+  const summary=h(`<div class="panel stack"><div><h2>Langkah 4 · Sintesis &amp; ranking</h2><p class="lede">Skor akhir = Σ (bobot kriteria × prioritas alternatif pada kriteria itu).</p></div>
+    <div class="rank">${order.map((i,r)=>`<div class="rk ${r===0?"first":""}"><div class="pos">${r+1}</div><div><div class="nm">${esc(S.alts[i])}</div><div class="bar"><i style="width:${(sc[i]/sc[top]*100).toFixed(1)}%"></i></div></div><div class="sc">${f3(sc[i])}</div></div>`).join("")}</div>
+    <p class="note"><b>${esc(S.alts[top])}</b> unggul dengan skor ${f3(sc[top])}, selisih ${f3(margin)} dari ${esc(S.alts[sec])}. Kontributor terbesar: <b>${esc(S.criteria[driver])}</b> (${(contrib[driver]/csum*100).toFixed(0)}% dari skornya). ${margin<0.05?"Selisih tipis, sehingga hasil sensitif terhadap perubahan bobot. Cek analisis sensitivitas di bawah.":""}</p>
+    ${allOk?`<p class="note">Semua ${S.criteria.length+1} matriks konsisten (CR ≤ 0,10).</p>`:`<p class="note warn"><b>Ada matriks yang tidak konsisten.</b> Hasil ranking ini belum layak dipakai sebelum penilaian direvisi (lihat tabel konsistensi).</p>`}
+    <div class="row"><button class="btn sm ghost" id="cp">Salin semua hasil (untuk Excel)</button>${methodSeg()}${synthSeg()}</div>
+    <p class="note">${S.synth==="ideal"?`<b>Ideal mode:</b> pada setiap kriteria, alternatif terbaik diberi nilai 1 dan yang lain dibagi dengan nilai terbaik itu; skor total lalu dinormalisasi. Menambah atau menghapus alternatif yang tidak relevan tidak membalik urutan alternatif lain. Cocok untuk memilih satu alternatif terbaik (sistem terbuka).`:`<b>Distributive mode</b> (dipakai di materi): bobot setiap kriteria dibagi ke alternatif sesuai prioritas lokalnya, sehingga total skor = 1. Cocok untuk membagi sumber daya tetap (anggaran, pangsa). Kelemahannya, menambah alternatif yang mirip dapat membalik ranking (rank reversal), seperti dicatat di slide "Cons/Limitations" no. 4.`}</p></div>`);
+  summary.querySelector("#cp").onclick=()=>copyText(exportTSV(C,AA,PU,sc));
+  v.appendChild(summary);
+
+  const g=h(`<div class="grid2" style="margin-top:20px"></div>`);
+  const pm=`<table><thead><tr><th></th>${S.criteria.map(c=>`<th>${esc(c)}</th>`).join("")}<th>Skor</th></tr></thead><tbody>
+    <tr class="tot"><td>Bobot kriteria</td>${cw.map(w=>`<td>${f3(w)}</td>`).join("")}<td>${f3(cw.reduce((a,b)=>a+b,0))}</td></tr>
+    ${PU.map((r,i)=>`<tr><td>${esc(S.alts[i])}</td>${r.map(x=>`<td>${f3(x)}</td>`).join("")}<td class="${i===top?"hl":""}">${f3(sc[i])}</td></tr>`).join("")}
+    <tr class="tot"><td>Total</td>${cw.map((_,k)=>`<td>${f3(PU.reduce((s,r)=>s+r[k],0))}</td>`).join("")}<td>${f3(sc.reduce((a,b)=>a+b,0))}</td></tr></tbody></table>`;
+  g.appendChild(h(`<div class="panel stack"><h3>Priority matrix × criteria weights · ${S.synth==="ideal"?"Ideal mode":"Distributive mode"}</h3><div class="tscroll">${pm}</div><p class="formula">Skor ${esc(S.alts[top])} = ${cw.map((w,k)=>`${f3(w)}×${f3(PU[top][k])}`).join(" + ")}${S.synth==="ideal"?` = ${f3(csum)} → dinormalisasi = ${f3(sc[top])}`:` = ${f3(sc[top])}`}</p></div>`));
+  const ct=`<table><thead><tr><th>Matriks</th><th>n</th><th>λmax</th><th>CI</th><th>CR</th><th>Status</th></tr></thead><tbody>
+    ${[["Kriteria",C],...S.criteria.map((c,k)=>["Alt · "+c,AA[k]])].map(([nm,a])=>`<tr><td>${esc(nm)}</td><td>${a.n}</td><td>${f3(a.lmax)}</td><td>${a.n>2?a.CI.toFixed(4):"0"}</td><td>${a.n>2?a.CR.toFixed(4):"—"}</td><td><span class="badge ${a.ok?"ok":"bad"}">${a.ok?"OK":"Revisi"}</span></td></tr>`).join("")}</tbody></table>`;
+  g.appendChild(h(`<div class="panel stack"><h3>Ringkasan konsistensi</h3><div class="tscroll">${ct}</div></div>`));
+  v.appendChild(g);
+
+  // sensitivity
+  S.sensC=Math.min(S.sensC||0,S.criteria.length-1);
+  const sens=h(`<div class="panel stack" style="margin-top:20px"><div><h3 style="margin-bottom:4px">Analisis sensitivitas</h3><p class="lede">Ubah bobot satu kriteria; bobot kriteria lain diskalakan proporsional agar total tetap 1. Gunakan untuk menguji seberapa kuat keputusan Anda terhadap perubahan prioritas.</p></div>
+    <div class="row"><label class="fld" style="flex-direction:row;align-items:center">Kriteria <select id="sc">${S.criteria.map((c,k)=>`<option value="${k}" ${k===S.sensC?"selected":""}>${esc(c)}</option>`).join("")}</select></label><button class="btn sm ghost" id="sr">Kembali ke bobot asli</button></div>
+    <div><input type="range" id="sw" min="0" max="1" step="0.01"><div class="verdict" id="swl"></div></div>
+    <div class="rank" id="srank"></div><p class="note" id="sflip"></p></div>`);
+  v.appendChild(sens);
+  const sel=sens.querySelector("#sc"),sw=sens.querySelector("#sw"),swl=sens.querySelector("#swl"),sr=sens.querySelector("#srank"),sf=sens.querySelector("#sflip");
+  const reweight=(k,x)=>{const rest=1-cw[k];return cw.map((w,j)=>j===k?x:(rest>1e-9?w*(1-x)/rest:(1-x)/(cw.length-1)))};
+  const winAt=(k,x)=>{const s=scores(PU,reweight(k,x));return s.indexOf(Math.max(...s))};
+  const drawS=()=>{
+    const k=S.sensC,x=+sw.value;const w=reweight(k,x);const s=scores(PU,w);const o=s.map((_,i)=>i).sort((a,b)=>s[b]-s[a]);
+    swl.innerHTML=`Bobot <b>${esc(S.criteria[k])}</b> = ${x.toFixed(2)} (asli ${f3(cw[k])})`;
+    sr.innerHTML=o.map((i,r)=>`<div class="rk ${r===0?"first":""}"><div class="pos">${r+1}</div><div><div class="nm">${esc(S.alts[i])}</div><div class="bar"><i style="width:${(s[i]/s[o[0]]*100).toFixed(1)}%"></i></div></div><div class="sc">${f3(s[i])}</div></div>`).join("");
+    // switch points
+    const pts=[];let prev=winAt(k,0);for(let t=1;t<=100;t++){const cur=winAt(k,t/100);if(cur!==prev){pts.push(`${S.alts[prev]} → ${S.alts[cur]} di bobot ≈ ${(t/100).toFixed(2)}`);prev=cur}}
+    sf.innerHTML=pts.length?`<b>Titik balik peringkat 1:</b> ${esc(pts.join("; "))}.`:`Peringkat 1 tetap <b>${esc(S.alts[winAt(k,0)])}</b> pada semua bobot ${esc(S.criteria[k])} (0–1). Keputusan robust terhadap kriteria ini.`;
+    S.sensW=x;save();
+  };
+  sw.value=S.sensW!=null?S.sensW:cw[S.sensC];
+  sel.onchange=()=>{S.sensC=+sel.value;sw.value=cw[S.sensC];drawS()};
+  sw.oninput=drawS;sens.querySelector("#sr").onclick=()=>{sw.value=cw[S.sensC];drawS()};
+  drawS();
+  const rowsBE=S.criteria.map((c,k)=>{const pts=[];let prev=winAt(k,0);for(let t=1;t<=100;t++){const cur=winAt(k,t/100);if(cur!==prev){pts.push(`${esc(S.alts[prev])} → ${esc(S.alts[cur])} di ≈ ${(t/100).toFixed(2)}`);prev=cur}}
+    return `<tr><td>${esc(c)}</td><td>${f3(cw[k])}</td><td style="text-align:left;white-space:normal">${pts.length?pts.join("; "):"Tidak ada titik balik (0–1)"}</td></tr>`}).join("");
+  const dw=[.25,.25,.15,.20,.15];const dsc=S.criteria.length===5?scores(PU,dw):null;
+  v.appendChild(h(`<div class="panel stack" style="margin-top:20px"><h3>Ringkasan titik balik peringkat 1 (semua kriteria)</h3><div class="tscroll"><table><thead><tr><th>Kriteria</th><th>Bobot asli</th><th style="text-align:left">Perubahan pemenang saat bobot kriteria digeser 0 → 1</th></tr></thead><tbody>${rowsBE}</tbody></table></div><p class="formula">Bobot kriteria lain diskalakan proporsional. Jarak bobot asli ke titik balik menunjukkan seberapa robust keputusan.</p>
+  ${dsc?`<h3 style="margin-top:10px">Triangulasi dengan bobot kajian awal (25/25/15/20/15)</h3><div class="tscroll"><table><thead><tr><th>Alternatif</th><th>Skor bobot AHP</th><th>Skor bobot kajian awal</th></tr></thead><tbody>${S.alts.map((a,i)=>`<tr><td>${esc(a)}</td><td>${f3(sc[i])}</td><td>${f3(dsc[i])}</td></tr>`).join("")}</tbody></table></div>`:""}</div>`));
+
+  v.appendChild(h(`<div class="panel stack" style="margin-top:20px"><h3>Rujukan Saaty &amp; pengembangannya</h3><ol class="refs">
+    <li>Saaty, T.L. (1977). A scaling method for priorities in hierarchical structures. <i>Journal of Mathematical Psychology</i>, 15(3), 234–281. Dasar eigenvector, CI, dan RI.</li>
+    <li>Saaty, T.L. (1980). <i>The Analytic Hierarchy Process: Planning, Priority Setting, Resource Allocation</i>. McGraw-Hill. Buku induk AHP.</li>
+    <li>Saaty, T.L. (1990). How to make a decision: The analytic hierarchy process. <i>European Journal of Operational Research</i>, 48, 9–26. Skala fundamental, batas ≤ 9 elemen, homogenitas, CR ≈ 10%.</li>
+    <li>Saaty, T.L. (2008). Decision making with the analytic hierarchy process. <i>International Journal of Services Sciences</i>, 1(1), 83–98.</li>
+    <li>Forman, E. (1993). Ideal and distributive synthesis modes (Expert Choice). Dasar mode Ideal.</li></ol></div>`));
+  const nx=h(`<div class="row" style="margin-top:20px"><button class="btn ghost">← Alternatif</button></div>`);
+  nx.querySelector("button").onclick=()=>{S.tab="alt";commit()};v.appendChild(nx);
+}
+function exportTSV(C,AA,P,sc){
+  const L=[];const tab=a=>a.join("\t");
+  L.push("AHP — "+S.goal,"Metode prioritas: "+(S.method==="eigen"?"Principal eigenvector":"Approximation (row average)"),"Ambang CR: "+(S.thr==="saaty"?"Saaty per ukuran (0,05/0,08/0,10)":"0,10"),"Sintesis: "+(S.synth==="ideal"?"Ideal":"Distributive"),"");
+  const mat=(title,names,M,A)=>{L.push(title);L.push(tab(["",...names,"Priority"]));M.forEach((r,i)=>L.push(tab([names[i],...r.map(x=>+x.toFixed(4)),+A.w[i].toFixed(4)])));L.push(tab(["λmax",+A.lmax.toFixed(4),"CI",+A.CI.toFixed(4),"RI",A.RI,"CR",+A.CR.toFixed(4),A.ok?"Konsisten":"Tidak konsisten"]));L.push("")};
+  mat("Matriks kriteria",S.criteria,S.cm,C);
+  S.criteria.forEach((c,k)=>mat("Alternatif terhadap "+c,S.alts,S.am[k],AA[k]));
+  L.push("Sintesis");L.push(tab(["",...S.criteria,"Skor"]));L.push(tab(["Bobot",...C.w.map(x=>+x.toFixed(4)),""]));
+  P.forEach((r,i)=>L.push(tab([S.alts[i],...r.map(x=>+x.toFixed(4)),+sc[i].toFixed(4)])));
+  return L.join("\n");
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-method]');if(b){setMethod(b.dataset.method);return}const t=e.target.closest('[data-thr]');if(t){S.thr=t.dataset.thr;commit();return}const y=e.target.closest('[data-synth]');if(y){S.synth=y.dataset.synth;commit()}});
+initSaveBar();render();initStorage();
+</script>
+
+</body>
+</html>
